@@ -1,0 +1,46 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,200;0,400;0,600;0,800;0,900;1,800;1,900&display=swap");
+
+:root {
+  --vHeight: 100%;
+  --vWidth: 100vw;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+#parallax-container {
+  display: block;
+  height: var(--vHeight);
+  width: var(--vWidth);
+  overflow: hidden;
+}
+
+.prlxLayer {
+  position: absolute;
+  top: 0;
+  transform: translateX(0px);
+  height: 100%;
+  width: 400vw;
+  display: flex;
+  background-repeat: repeat-x;
+  transition: all 0.15s ease;
+  background-size: contain !important;
+}
+.prlxLayer:last-of-type {
+   border: 3px solid inset green;
+}
+.para-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100vw;
+}
+
+h1 {
+  color: white;
+  font-family: Montserrat;
+  font-weight: 800;
+}
