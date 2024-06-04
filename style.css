@@ -18,18 +18,18 @@ body {
 }
 
 .prlxLayer {
-  position: absolute;
+  position: fixed;
   top: 0;
   transform: translateX(0px);
   height: 100%;
   width: 400vw;
   display: flex;
   background-repeat: repeat-x;
-  transition: all 0.15s ease;
-  background-size: contain !important;
+  transition: all 0.3s ease;
+  background-size: auto 100% !important;
 }
 .prlxLayer:last-of-type {
-   border: 3px solid inset green;
+   border: 3px solid green;
 }
 .para-section {
   display: flex;
