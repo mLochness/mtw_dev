@@ -29,7 +29,7 @@ body {
   background-size: auto 100% !important;
 }
 .prlxLayer:last-of-type {
-   border: 3px solid green;
+   border: 1px solid green;
 }
 .para-section {
   display: flex;
@@ -37,6 +37,7 @@ body {
   justify-content: center;
   height: 100%;
   width: 100vw;
+  border: 1px solid red;
 }
 
 h1 {
