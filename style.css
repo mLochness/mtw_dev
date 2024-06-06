@@ -22,7 +22,7 @@ body {
   top: 0;
   transform: translateX(0px);
   height: 100%;
-  width: 400vw;
+  min-width: 100vw;
   display: flex;
   background-repeat: repeat-x;
   transition: all 0.3s ease;
@@ -44,4 +44,19 @@ h1 {
   color: white;
   font-family: Montserrat;
   font-weight: 800;
+}
+
+.animateFromTop {
+  transform: translateY(-50vh);
+  transition: all 1.5s ease-out;
+}
+.animateMe {
+  opacity: 1;
+  transform: translateX(0vw) translateY(0vh);
+}
+
+.dummy {
+  width: 100px;
+  height: 100px;
+  background-color: red;
 }

@@ -34,8 +34,12 @@ jQuery(document).ready(function ($) {
 
     scrollIndexMax = -100 * (paraSectionsCount - 1);
 
-    // set top parallax layer width:
-    $(".prlxLayer:last").css("width", "" + paraSectionsCount * vWidth * 1.5 + "px");
+    // set parallax layer width:
+    $(prlxLayers).each(function () {
+      thisIndex = $(this).index();
+      $(this).css("width", "" + (thisIndex + 1) * vWidth + "px");
+    })
+    //$(".prlxLayer:last").css("width", "" + paraSectionsCount * vWidth * 1.5 + "px");
     // count moveUnits for fitting sections in viewport:
     moveUnit = vWidth / paraSectionsCount;
     centUnit = vWidth / 100;
@@ -56,11 +60,15 @@ function throttle(fn, wait) {
 
   // fired wheel/touchmove or swipe events counter
   var triggers = 0;
+  var triggersLimit = 8; //scroll distance to push slide
+
 
   // position reference container id: #contentLayer
-  $(prlxContainer).on("wheel touchmove", function (e) {
-    
+  $(document).on("wheel touchmove", function (e) {
     ++triggers;
+    if (triggers > triggersLimit + 1 ) {
+      triggers = 0;
+    }
     const y = e.originalEvent.deltaY;
     const x = e.originalEvent.deltaX;
     //currentPosition = $("#contentLayer").position().left;
@@ -74,7 +82,7 @@ function throttle(fn, wait) {
       if (scrollIndex > 0) {
         scrollIndex = 0;
       }
-      if (y < 1 && triggers > 7) {
+      if (y < 1 && triggers > triggersLimit) {
         console.log("triggers limit, function LEFT fired -------------");
         triggers = 0;
         if ($(current).prev().length) {
@@ -82,7 +90,7 @@ function throttle(fn, wait) {
           $(prlxLayers).each(function () {
             thisIndex = $(this).index();
             $(this).css("transform", "translateX(" + (moveUnit * (thisIndex + 1) * -1 * (curSectionIndex - 1)) + "px)");
-            console.log("curSectionIndex - 1:", curSectionIndex - 1);
+            console.log("layer", thisIndex ,"offset: ", $(this).offset().left);
           });
           scrollIndex = -100 * (curSectionIndex - 1);
           $(current).removeClass("current");
@@ -95,14 +103,15 @@ function throttle(fn, wait) {
     }
     if (y > 0 || x > 0) {
       scrollIndex--;
-      if (y > 1 && triggers > 7) {
+      if (y > 1 && triggers > triggersLimit) {
         console.log("triggers limit, function RIGHT fired -------------");
         triggers = 0;
         if ($(current).next().length) {
           var nextSection = $(current).next();
           $(prlxLayers).each(function () {
             thisIndex = $(this).index();
-            $(this).css("transform", "translateX(" + (-moveUnit * (thisIndex + 1) * (curSectionIndex + 1)) + "px)");
+            $(this).css("transform", "translateX(" + (moveUnit * (thisIndex + 1) * -1 * (curSectionIndex + 1)) + "px)");
+            console.log("layer", thisIndex ,"offset: ", $(this).offset().left);
           });
           scrollIndex = -100 * (curSectionIndex + 1);
           $(current).removeClass("current");
@@ -114,12 +123,12 @@ function throttle(fn, wait) {
     if (scrollIndex > scrollIndexMax) {
       $(prlxLayers).each(function () {
         thisIndex = $(this).index();
-        $(this).css("transform", "translateX(" + (scrollTrace * thisIndex * prlxRatio) + "px)");
-      });
+        $(this).css("transform", "translateX(" + (scrollTrace * thisIndex * prlxRatio) + "px)");      });
     }
-    // if (scrollIndex < scrollIndexMax) {
-    //   scrollIndex = scrollIndexMax;
-    // }
+    if (scrollIndex < scrollIndexMax) {
+      scrollIndex = scrollIndexMax;
+      scrollTrace = scrollIndexMax * 10;
+    }
 
     console.log("triggers:", triggers);
     console.log("scrollIndex:", scrollIndex);
@@ -127,6 +136,22 @@ function throttle(fn, wait) {
   });
 
   // *************************************************************
+
+  const animImage = document.querySelectorAll('.animImage') 
+observer = new IntersectionObserver((entries, observer) => { 
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+     entry.target.classList.add('animateMe');
+    } else {
+      entry.target.classList.remove('animateMe');
+    }
+  });
+});
+animImage.forEach(animImage => {
+  observer.observe(animImage);
+});
+
+// *************************************************************
 
   // fix for page freezing on window resize
   function asyncProxy(fn, options, ctx) {
