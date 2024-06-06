@@ -57,7 +57,6 @@ function throttle(fn, wait) {
   }
 }
 
-
   // fired wheel/touchmove or swipe events counter
   var triggers = 0;
   var triggersLimit = 8; //scroll distance to push slide
