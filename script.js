@@ -1,30 +1,33 @@
 jQuery(document).ready(function ($) {
 
+  $(".parallax-container:first").addClass("currentLevel");
+  $(".para-section:first").addClass("currentSection");
+
   var vHeight;
   var vWidth;
-
-  //let paraSectionsCount = document.querySelector(".para-section").length;
-  let paraSectionsCount = $(".para-section").length;
+  let parallaxContainer = $(".parallax-container");
+  let paraSectionsCount = $(".currentLevel .para-section").length;
   let scrollIndexMax;
-  let prlxContainer = $("#parallax-container");
-  let prlxLayers = $(".prlxLayer");
-  let prlxLayersCount = $(".prlxLayer").length;
-  let contentLayerIndex = $("#contentLayer").index();
+  let prlxLayers = $(".currentLevel .prlxLayer");
+  let prlxLayersCount = $(".currentLevel .prlxLayer").length;
+  let contentLayerIndex = $(".currentLevel #contentLayer").index();
   let prlxRatio = 1 / contentLayerIndex //parallax speed according to content layer
   let scrollIndex = 0;
-  //let currentPosition = 0;
-  //let contentLayer = $("#contentLayer");
+
+  //disable click events on parallax layers over content layer:
+  $(".prlxLayer").each(function () {
+    if ($(this).index() > contentLayerIndex) {
+      $(this).css("pointer-events", "none");
+    }
+  });
 
   let moveUnit;
   let centUnit;
-  //let pushLimit;
 
   console.log("contentLayerIndex:", contentLayerIndex);
   console.log("prlxLayersCount:", prlxLayersCount);
 
   getWindowSize();
-  //document.querySelector(".para-section").classList.add("current");
-  $(".para-section:first").addClass("current");
 
   function getWindowSize() {
     vHeight = document.documentElement.clientHeight;
@@ -34,28 +37,34 @@ jQuery(document).ready(function ($) {
 
     scrollIndexMax = -100 * (paraSectionsCount - 1);
 
-    // set parallax layer width:
+    $(parallaxContainer).each(function () {
+      thisIndex = $(this).index();
+      $(this).css("transform", "translateY(" + thisIndex * vHeight + "px)");
+    })
+    ////////////////////////////////////////////////////////////////////
+    // set parallax layers width:
+    // $(prlxLayers).each(function () {
+    //   let layerSectionRatio = paraSectionsCount - contentLayerIndex;
+    //   console.log("layerSectionRatio", layerSectionRatio);
+    //   thisIndex = $(this).index();
+    //   $(this).css("width", (thisIndex + layerSectionRatio) * vWidth + "px");
+    // })
+    //test setup:
     $(prlxLayers).each(function () {
       thisIndex = $(this).index();
-      $(this).css("width", "" + (thisIndex + 1) * vWidth + "px");
+      $(this).css("width", (thisIndex + paraSectionsCount) * vWidth + "px");
     })
-    //$(".prlxLayer:last").css("width", "" + paraSectionsCount * vWidth * 1.5 + "px");
+    //////////////////////////////////////////////////////////////////////////
+
+
     // count moveUnits for fitting sections in viewport:
-    moveUnit = vWidth / paraSectionsCount;
+    moveUnit = vWidth / prlxLayersCount;
     centUnit = vWidth / 100;
     console.log("window width/height:", vWidth, "/", vHeight);
     console.log("paraSectionsCount:", paraSectionsCount, "scrollIndexMax:", scrollIndexMax);
+    console.log("moveUnit:", moveUnit, "px");
   }
 
-function throttle(fn, wait) {
-  var time = Date.now();
-  return function() {
-    if ((time + wait - Date.now()) < 0) {
-      fn();
-      time = Date.now();
-    }
-  }
-}
 
   // fired wheel/touchmove or swipe events counter
   var triggers = 0;
@@ -65,16 +74,19 @@ function throttle(fn, wait) {
   // position reference container id: #contentLayer
   $(document).on("wheel touchmove", function (e) {
     ++triggers;
-    if (triggers > triggersLimit + 1 ) {
-      triggers = 0;
-    }
+
     const y = e.originalEvent.deltaY;
     const x = e.originalEvent.deltaX;
-    //currentPosition = $("#contentLayer").position().left;
-    current = $(".current");
-    curSectionIndex = $(".current").index();
-    let thisIndex;
 
+    let currentLevel = $(".currentLevel");
+    let curLevelIndex = $(".currentLevel").index();
+    let currentSection = $(".currentLevel .currentSection");
+    let curSectionIndex = $(".currentLevel .currentSection").index();
+    let thisIndex;
+    let scrollTrace;
+
+    //console.log("deltaY:", Math.abs(e.originalEvent.deltaY), "deltaX:", Math.abs(e.originalEvent.deltaX));
+    if (Math.abs(e.originalEvent.deltaY) + Math.abs(e.originalEvent.deltaX) < 5) return;
 
     if (y < 0 || x < 0) {
       scrollIndex++;
@@ -84,16 +96,18 @@ function throttle(fn, wait) {
       if (y < 1 && triggers > triggersLimit) {
         console.log("triggers limit, function LEFT fired -------------");
         triggers = 0;
-        if ($(current).prev().length) {
-          var prevSection = $(current).prev();
+        if ($(currentSection).prev().length) {
+          var prevSection = $(currentSection).prev();
+          scrollTrace = -vWidth * (curSectionIndex - 1);
           $(prlxLayers).each(function () {
             thisIndex = $(this).index();
-            $(this).css("transform", "translateX(" + (moveUnit * (thisIndex + 1) * -1 * (curSectionIndex - 1)) + "px)");
-            console.log("layer", thisIndex ,"offset: ", $(this).offset().left);
+            $(this).css("transform", "translateX(" + (scrollTrace * (thisIndex) * prlxRatio) + "px)");
+            console.log("LEFT -> layer", thisIndex, "offset: ", scrollTrace * (thisIndex) * prlxRatio);
           });
           scrollIndex = -100 * (curSectionIndex - 1);
-          $(current).removeClass("current");
-          $(prevSection).addClass("current");
+          $(currentSection).removeClass("currentSection");
+          $(prevSection).addClass("currentSection");
+          triggers = 0;
         }
         else {
           scrollIndex = 0;
@@ -104,53 +118,69 @@ function throttle(fn, wait) {
       scrollIndex--;
       if (y > 1 && triggers > triggersLimit) {
         console.log("triggers limit, function RIGHT fired -------------");
-        triggers = 0;
-        if ($(current).next().length) {
-          var nextSection = $(current).next();
+        //triggers = 0;
+        if ($(currentSection).next().length) {
+          var nextSection = $(currentSection).next();
+          scrollTrace = -vWidth * (curSectionIndex + 1);
           $(prlxLayers).each(function () {
             thisIndex = $(this).index();
-            $(this).css("transform", "translateX(" + (moveUnit * (thisIndex + 1) * -1 * (curSectionIndex + 1)) + "px)");
-            console.log("layer", thisIndex ,"offset: ", $(this).offset().left);
+            $(this).css("transform", "translateX(" + (scrollTrace * (thisIndex) * prlxRatio) + "px)");
+            console.log("RIGHT -> layer", thisIndex, "offset: ", (scrollTrace * (thisIndex) * prlxRatio));
           });
           scrollIndex = -100 * (curSectionIndex + 1);
-          $(current).removeClass("current");
-          $(nextSection).addClass("current");
+          $(currentSection).removeClass("currentSection");
+          $(nextSection).addClass("currentSection");
+
         }
+        triggers = 0;
       }
     }
-    scrollTrace = scrollIndex * centUnit;
+
     if (scrollIndex > scrollIndexMax) {
+      scrollTrace = scrollIndex * centUnit;
       $(prlxLayers).each(function () {
         thisIndex = $(this).index();
-        $(this).css("transform", "translateX(" + (scrollTrace * thisIndex * prlxRatio) + "px)");      });
+        $(this).css("transform", "translateX(" + (scrollTrace * thisIndex * prlxRatio) + "px)");
+        //console.log("SCROLL -> layer", thisIndex, "offset: ",(scrollTrace * (thisIndex ) * prlxRatio));
+
+      });
     }
     if (scrollIndex < scrollIndexMax) {
       scrollIndex = scrollIndexMax;
       scrollTrace = scrollIndexMax * 10;
     }
+    // if (scrollIndex < scrollIndexMax && $(parallaxContainer).next().length) {
+    //   var nextLevel = $(currentLevel).next();
+    //       $(currentLevel).removeClass("currentLevel");
+    //       $(nextLevel).addClass("currentLevel");
+    //       $(".currentLevel").css("transform", "translateY(0px)");
+    //   scrollIndex = -100 * (curSectionIndex + 1);
+    //       $(currentSection).removeClass("currentSection");
+    //       $(".currentLevel .para-section:first").addClass("currentSection");
+    // }
 
-    console.log("triggers:", triggers);
-    console.log("scrollIndex:", scrollIndex);
-    console.log("scrollTrace:", scrollTrace);
+    console.log("triggers:", triggers, "scrollIndex:", scrollIndex, "scrollTrace:", scrollTrace);
+
   });
 
   // *************************************************************
 
-  const animImage = document.querySelectorAll('.animImage') 
-observer = new IntersectionObserver((entries, observer) => { 
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-     entry.target.classList.add('animateMe');
-    } else {
-      entry.target.classList.remove('animateMe');
-    }
+  //animate elements if in viewport:
+  const animImage = document.querySelectorAll('.animImage')
+  observer = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('animateMe');
+      } else {
+        entry.target.classList.remove('animateMe');
+      }
+    });
   });
-});
-animImage.forEach(animImage => {
-  observer.observe(animImage);
-});
+  animImage.forEach(animImage => {
+    observer.observe(animImage);
+  });
 
-// *************************************************************
+  // *************************************************************
 
   // fix for page freezing on window resize
   function asyncProxy(fn, options, ctx) {
@@ -205,14 +235,18 @@ animImage.forEach(animImage => {
 
   $(window).on("resize", holdResize);
 
+  // aligning to viewport after window resize:
   function alignSectionAfterResize() {
-    curSectionIndex = $(".current").index();
+    curSectionIndex = $(".currentSection").index();
+
+    scrollTrace = -vWidth * (curSectionIndex);
     $(prlxLayers).each(function () {
-      let thisIndex = $(this).index();
-      $(this).css("transform", "translateX(" + (-moveUnit * (thisIndex + 1) * curSectionIndex) + "px)");
-      console.log("aligned to ", "(" + (-moveUnit * (thisIndex + 1) * curSectionIndex) + "px)")
+      thisIndex = $(this).index();
+      $(this).css("transform", "translateX(" + (scrollTrace * thisIndex * prlxRatio) + "px)");
+      console.log("LEFT -> layer", thisIndex, "offset: ", $(this).offset().left);
     });
-  }
+    scrollIndex = -100 * (curSectionIndex - 1);
+  };
 
 })
 
