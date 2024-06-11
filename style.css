@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,200;0,400;0,600;0,800;0,900;1,800;1,900&display=swap");
+/* @import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,200;0,400;0,600;0,800;0,900;1,800;1,900&display=swap"); */
 
 :root {
   --vHeight: 100%;
@@ -19,16 +19,14 @@ body {
   position: fixed;
   top: 0;
   z-index: 999;
-  transition: all 0.75s;
+  opacity: 0;
 }
 .parallax-container {
   position: fixed;
   top: 0;
-  /*display: none;  --prevents animation*/ 
   height: var(--vHeight);
   width: var(--vWidth);
   overflow: hidden;
-  transition: all 0.75s;
 }
 .currentLevel {
   display: block;
@@ -44,9 +42,6 @@ body {
   transition: all 0.5s ease;
   background-size: auto 100% !important;
 }
-/* .prlxLayer:last-of-type {
-   border: 1px solid green;
-} */
 
 .para-section {
   display: flex;
@@ -54,7 +49,6 @@ body {
   justify-content: center;
   height: 100%;
   width: var(--vWidth);
-  border: 1px inset red;
 }
 
 h1, h2 {
