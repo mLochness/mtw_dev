@@ -30,6 +30,7 @@ body {
 }
 .currentLevel {
   display: block;
+  z-index: 5;
 }
 .prlxLayer {
   position: absolute;

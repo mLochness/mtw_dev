@@ -291,7 +291,6 @@ jQuery(document).ready(function ($) {
     $(prlxLayers).each(function () {
       thisIndex = $(this).index();
       $(this).css("transform", "translateX(" + (scrollTrace * thisIndex * prlxRatio) + "px)");
-      console.log("LEFT -> layer", thisIndex, "offset: ", $(this).offset().left);
     });
     scrollIndex = -100 * (curSectionIndex - 1);
   };
