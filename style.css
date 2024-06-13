@@ -1,4 +1,4 @@
-/* @import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,200;0,400;0,600;0,800;0,900;1,800;1,900&display=swap"); */
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,200;0,400;0,600;0,800;0,900;1,800;1,900&display=swap");
 
 :root {
   --vHeight: 100%;
@@ -46,10 +46,12 @@ body {
 
 .para-section {
   display: flex;
+  box-sizing: border-box;
   align-items: center;
   justify-content: center;
   height: 100%;
   width: var(--vWidth);
+  padding: calc(15px + 5vw) !important;
 }
 
 h1, h2 {
@@ -58,6 +60,16 @@ h1, h2 {
   font-weight: 800;
 }
 
+.cursor{
+  position: fixed;
+  width: 24px;
+  height: 24px;
+  background-image: url(/img/cursor1.png);
+  background-size: contain;
+  pointer-events: none;
+  /* mix-blend-mode: difference; */
+  z-index: 999;
+}
 .animateFromTop {
   transform: translateY(-50vh);
   transition: all 0.75s ease-out;
@@ -67,9 +79,26 @@ h1, h2 {
   transform: translateX(0vw) translateY(0vh);
 }
 
-.dummy {
-  width: 100px;
-  height: 100px;
-  margin: 3em;
-  background-color: red;
+.mtwBox {
+  min-width: 100px;
+  min-height: 100px;
+  margin: 2em;
+  padding: 2em;
+  background-color: transparent;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url(img/boxCtl.png), url(img/boxCtr.png), url(img/boxCbr.png), url(img/boxCbl.png), url(img/boxT.png), url(img/boxR.png), url(img/boxB.png), url(img/boxL.png);
+  background-position: top left, top right, bottom right, bottom left, top, right, bottom, left;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat-x, repeat-y, repeat-x, repeat-y;
+}
+.mtwBox::before {
+  content: "";
+  width: calc(100% - 24px);
+  height: calc(100% - 24px);
+  display: block;
+  background-color: #19333a;
+  position: absolute;
+  z-index: -1;
 }

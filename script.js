@@ -92,7 +92,7 @@ jQuery(document).ready(function ($) {
 
   //event throttling while slide animation
   var ignoreEvents = false;
-  var ignoreTime = 1000;
+  var ignoreTime = 1000; // time to wait
   function ignoreEventsTimeout() {
     ignoreEvents = false;
     console.log("ignoreEventsStatus:", ignoreEvents);
@@ -210,6 +210,55 @@ jQuery(document).ready(function ($) {
 
     //console.log("triggers:", triggers, "scrollIndex:", scrollIndex, "scrollTrace:", scrollTrace);
   });
+
+  // *************************************************************
+
+  //custom cursor: 
+  var cursor = $(".cursor");
+  $("html, *").css("cursor","none");
+
+    $(window).mousemove(function(e) {
+        cursor.css({
+            top: e.clientY - cursor.height() / 8,
+            left: e.clientX - cursor.width() / 8
+        });
+    });
+
+    $(window)
+        .mouseleave(function() {
+            cursor.css({
+                opacity: "0"
+            });
+        })
+        .mouseenter(function() {
+            cursor.css({
+                opacity: "1"
+            });
+        });
+
+    $("a, button")
+        .mouseenter(function() {
+            cursor.css(
+              "background-image", "url(https://magic.sernato.sk/wp-content/uploads/2024/06/cursor2.png)"
+            );
+        })
+        .mouseleave(function() {
+          cursor.css(
+            "background-image", "url(https://magic.sernato.sk/wp-content/uploads/2024/06/cursor1.png)"
+          );
+        });
+
+    // $(window)
+    //     .mousedown(function() {
+    //         cursor.css({
+    //             transform: "scale(.2)"
+    //         });
+    //     })
+    //     .mouseup(function() {
+    //         cursor.css({
+    //             transform: "scale(1)"
+    //         });
+    //     });
 
   // *************************************************************
 
