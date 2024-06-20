@@ -15,7 +15,7 @@ function removeLoader() {
 
 jQuery(document).ready(function ($) {
 
-    $(".parallax-container:first").addClass("currentLevel");
+  $(".parallax-container:first").addClass("currentLevel");
   $(".para-section:first").addClass("currentSection");
 
   var vHeight;
@@ -98,6 +98,68 @@ jQuery(document).ready(function ($) {
     console.log("ignoreEventsStatus:", ignoreEvents);
   }
 
+
+  //move sections left/right
+  function sectionMove(current, direction) {
+    currentSection = $(".currentLevel .currentSection");
+    curSectionIndex = $(".currentLevel .currentSection").index();
+
+    if (direction === "left") {
+      var nextSection = $(currentSection).next();
+      scrollTrace = -vWidth * (curSectionIndex + 1);
+      $(prlxLayers).each(function () {
+        thisIndex = $(this).index();
+        $(this).css("transform", "translateX(" + (scrollTrace * (thisIndex) * prlxRatio) + "px)");
+      });
+      scrollIndex = -100 * (curSectionIndex + 1);
+      $(currentSection).removeClass("currentSection");
+      $(nextSection).addClass("currentSection");
+    }
+    if (direction === "right") {
+      var prevSection = $(currentSection).prev();
+      scrollTrace = -vWidth * (curSectionIndex - 1);
+      $(prlxLayers).each(function () {
+        thisIndex = $(this).index();
+        $(this).css("transform", "translateX(" + (scrollTrace * (thisIndex) * prlxRatio) + "px)");
+      });
+      scrollIndex = -100 * (curSectionIndex - 1);
+      $(currentSection).removeClass("currentSection");
+      $(prevSection).addClass("currentSection");
+    }
+    triggers = 0;
+  };
+
+
+  //move levels up/down
+  function levelMove(current, direction) {
+    currentLevel = $(".currentLevel");
+    ignoreEvents = true;
+    if (direction === "up") {
+      var nextLevel = $(currentLevel).next();
+      $(currentLevel).removeClass("currentLevel");
+      $(nextLevel).addClass("currentLevel");
+      setParalaxContainerPosition();
+      scrollIndex = 0;
+      $(currentSection).removeClass("currentSection");
+      $(".currentLevel .para-section:first").addClass("currentSection");
+      $(".currentLevel .prlxLayer").each(function () {
+        $(this).css("transform", "translateX(0px)");
+      })
+    }
+    if (direction === "down") {
+      var prevLevel = $(currentLevel).prev();
+      $(currentLevel).removeClass("currentLevel");
+      $(prevLevel).addClass("currentLevel");
+      setParalaxContainerPosition();
+      scrollIndex = scrollIndexMax;
+      $(currentSection).removeClass("currentSection");
+      $(".currentLevel .para-section:last").addClass("currentSection");
+    }
+    setTimeout(ignoreEventsTimeout, ignoreTime);
+  };
+
+
+
   $(document).on("wheel touchmove", function (e) {
 
     if (ignoreEvents === true) {
@@ -109,12 +171,9 @@ jQuery(document).ready(function ($) {
     const y = e.originalEvent.deltaY;
     const x = e.originalEvent.deltaX;
 
-    currentLevel = $(".currentLevel");
     prlxLayers = $(".currentLevel .prlxLayer");
     prlxLayersCount = $(".currentLevel .prlxLayer").length;
     curLevelIndex = $(".currentLevel").index();
-    currentSection = $(".currentLevel .currentSection");
-    curSectionIndex = $(".currentLevel .currentSection").index();
     parallaxContainer = $(".parallax-container.currentLevel");
     paraSectionsCount = $(".currentLevel .para-section").length;
     scrollIndexMax = -100 * (paraSectionsCount - 1);
@@ -134,18 +193,8 @@ jQuery(document).ready(function ($) {
       if ((y < 1 || x < 1) && triggers > triggersLimit) {
         ignoreEvents = true;
         triggers = 0;
-        if ($(currentSection).prev().length) {
-          var prevSection = $(currentSection).prev();
-          scrollTrace = -vWidth * (curSectionIndex - 1);
-          $(prlxLayers).each(function () {
-            thisIndex = $(this).index();
-            $(this).css("transform", "translateX(" + (scrollTrace * (thisIndex) * prlxRatio) + "px)");
-          });
-          scrollIndex = -100 * (curSectionIndex - 1);
-          $(currentSection).removeClass("currentSection");
-          $(prevSection).addClass("currentSection");
-          triggers = 0;
-
+        if ($(".currentSection").prev().length) {
+          sectionMove($(".currentSection"), "right");
         }
         else {
           scrollIndex = 0;
@@ -157,16 +206,8 @@ jQuery(document).ready(function ($) {
       scrollIndex--;
       if ((y > 1 || x > 1) && triggers > triggersLimit) {
         ignoreEvents = true;
-        if ($(currentSection).next().length) {
-          var nextSection = $(currentSection).next();
-          scrollTrace = -vWidth * (curSectionIndex + 1);
-          $(prlxLayers).each(function () {
-            thisIndex = $(this).index();
-            $(this).css("transform", "translateX(" + (scrollTrace * (thisIndex) * prlxRatio) + "px)");
-          });
-          scrollIndex = -100 * (curSectionIndex + 1);
-          $(currentSection).removeClass("currentSection");
-          $(nextSection).addClass("currentSection");
+        if ($(".currentSection").next().length) {
+          sectionMove($(".currentSection"), "left");
         }
         triggers = 0;
         setTimeout(ignoreEventsTimeout, ignoreTime);
@@ -182,29 +223,10 @@ jQuery(document).ready(function ($) {
     }
 
     if (scrollIndex < scrollIndexMax && $(parallaxContainer).next().length) {
-      ignoreEvents = true;
-      var nextLevel = $(currentLevel).next();
-      $(currentLevel).removeClass("currentLevel");
-      $(nextLevel).addClass("currentLevel");
-      setParalaxContainerPosition();
-      scrollIndex = 0;
-      $(currentSection).removeClass("currentSection");
-      $(".currentLevel .para-section:first").addClass("currentSection");
-      $(".currentLevel .prlxLayer").each(function () {
-        $(this).css("transform", "translateX(0px)");
-      })
-      setTimeout(ignoreEventsTimeout, ignoreTime);
+      levelMove($(".currentLevel"), "up");
     }
     if (scrollIndex > 0 && $(parallaxContainer).prev().length) {
-      ignoreEvents = true;
-      var prevLevel = $(currentLevel).prev();
-      $(currentLevel).removeClass("currentLevel");
-      $(prevLevel).addClass("currentLevel");
-      setParalaxContainerPosition();
-      scrollIndex = scrollIndexMax;
-      $(currentSection).removeClass("currentSection");
-      $(".currentLevel .para-section:last").addClass("currentSection");
-      setTimeout(ignoreEventsTimeout, ignoreTime);
+      levelMove($(".currentLevel"), "down");
     }
 
 
@@ -215,50 +237,39 @@ jQuery(document).ready(function ($) {
 
   //custom cursor: 
   var cursor = $(".cursor");
-  $("html, *").css("cursor","none");
+  $("html, *").css("cursor", "none");
 
-    $(window).mousemove(function(e) {
-        cursor.css({
-            top: e.clientY - cursor.height() / 8,
-            left: e.clientX - cursor.width() / 8
-        });
+  $(window).mousemove(function (e) {
+    cursor.css({
+      top: e.clientY - cursor.height() / 8,
+      left: e.clientX - cursor.width() / 8
+    });
+  });
+
+  $(window)
+    .mouseleave(function () {
+      cursor.css({
+        opacity: "0"
+      });
+    })
+    .mouseenter(function () {
+      cursor.css({
+        opacity: "1"
+      });
     });
 
-    $(window)
-        .mouseleave(function() {
-            cursor.css({
-                opacity: "0"
-            });
-        })
-        .mouseenter(function() {
-            cursor.css({
-                opacity: "1"
-            });
-        });
+  $("a, button")
+    .mouseenter(function () {
+      cursor.css(
+        "background-image", "url(https://magic.sernato.sk/wp-content/uploads/2024/06/cursor2.png)"
+      );
+    })
+    .mouseleave(function () {
+      cursor.css(
+        "background-image", "url(https://magic.sernato.sk/wp-content/uploads/2024/06/cursor1.png)"
+      );
+    });
 
-    $("a, button")
-        .mouseenter(function() {
-            cursor.css(
-              "background-image", "url(https://magic.sernato.sk/wp-content/uploads/2024/06/cursor2.png)"
-            );
-        })
-        .mouseleave(function() {
-          cursor.css(
-            "background-image", "url(https://magic.sernato.sk/wp-content/uploads/2024/06/cursor1.png)"
-          );
-        });
-
-    // $(window)
-    //     .mousedown(function() {
-    //         cursor.css({
-    //             transform: "scale(.2)"
-    //         });
-    //     })
-    //     .mouseup(function() {
-    //         cursor.css({
-    //             transform: "scale(1)"
-    //         });
-    //     });
 
   // *************************************************************
 
