@@ -30,26 +30,6 @@ jQuery(document).ready(function ($) {
   let prlxRatio = 1 / contentLayerIndex //parallax speed according to content layer
   let scrollIndex = 0;
 
-  function setParalaxContainerPosition() {
-    let levelMoveSpeed = 750; // duration of vertical level switch animation
-    curParConIndex = $(".currentLevel").index();
-    $(".parallax-container").each(function () {
-      thisIndex = $(this).index();
-      if (thisIndex > curParConIndex) {
-        $(this).animate({ "top": vHeight + "px" }, levelMoveSpeed);
-        //$(this).css("top", vHeight + "px");
-      }
-      if (thisIndex === curParConIndex) {
-        //$(this).css("top", "0px");
-        $(this).animate({ "top": 0 + "px" }, levelMoveSpeed);
-      }
-      if (thisIndex < curParConIndex) {
-        $(this).animate({ "top": -vHeight + "px" }, levelMoveSpeed);
-        //$(this).css("top", -vHeight + "px", "visibility", "hidden");
-        //$(this).css("visibility", "hidden");
-      }
-    })
-  }
 
   //disable click events on parallax layers over content layer:
   $(".prlxLayer").each(function () {
@@ -60,6 +40,7 @@ jQuery(document).ready(function ($) {
 
   let moveUnit;
   let centUnit;
+  let scrollTrace;
 
   getWindowSize();
 
@@ -69,6 +50,7 @@ jQuery(document).ready(function ($) {
     vWidth = document.documentElement.clientWidth;
     document.documentElement.style.setProperty("--vWidth", `${vWidth}px`);
 
+    paraSectionsCount = $(".currentLevel .para-section").length;
     scrollIndexMax = -100 * (paraSectionsCount - 1);
 
     // set parallax layers width:
@@ -98,6 +80,28 @@ jQuery(document).ready(function ($) {
     console.log("ignoreEventsStatus:", ignoreEvents);
   }
 
+  function setParalaxContainerPosition() {
+    let levelMoveSpeed = 750; // duration of vertical level switch animation
+    curParConIndex = $(".currentLevel").index();
+
+    $(".parallax-container").each(function () {
+      thisIndex = $(this).index();
+      if (thisIndex > curParConIndex) {
+        $(this).animate({ "top": vHeight + "px" }, levelMoveSpeed);
+      }
+      if (thisIndex === curParConIndex) {
+        $(this).animate({ "top": 0 + "px" }, levelMoveSpeed);
+      }
+      if (thisIndex < curParConIndex) {
+        $(this).animate({ "top": -vHeight + "px" }, levelMoveSpeed);
+      }
+    })
+    paraSectionsCount = $(".currentLevel .para-section").length;
+    scrollIndexMax = -100 * (paraSectionsCount - 1);
+    contentLayerIndex = $(".currentLevel #contentLayer").index();
+    prlxRatio = 1 / contentLayerIndex;
+
+  }
 
   //move sections left/right
   function sectionMove(current, direction) {
@@ -127,11 +131,14 @@ jQuery(document).ready(function ($) {
       $(prevSection).addClass("currentSection");
     }
     triggers = 0;
+    setTimeout(ignoreEventsTimeout, ignoreTime);
+    console.log('sectionMove:', direction, 'curLevel:', $(".currentLevel").index(), 'curSection:', $(".currentSection").index());
   };
 
 
   //move levels up/down
   function levelMove(current, direction) {
+    currentSection = $(".currentLevel .currentSection");
     currentLevel = $(".currentLevel");
     ignoreEvents = true;
     if (direction === "up") {
@@ -139,9 +146,9 @@ jQuery(document).ready(function ($) {
       $(currentLevel).removeClass("currentLevel");
       $(nextLevel).addClass("currentLevel");
       setParalaxContainerPosition();
-      scrollIndex = 0;
       $(currentSection).removeClass("currentSection");
       $(".currentLevel .para-section:first").addClass("currentSection");
+      scrollIndex = 0;
       $(".currentLevel .prlxLayer").each(function () {
         $(this).css("transform", "translateX(0px)");
       })
@@ -151,11 +158,14 @@ jQuery(document).ready(function ($) {
       $(currentLevel).removeClass("currentLevel");
       $(prevLevel).addClass("currentLevel");
       setParalaxContainerPosition();
-      scrollIndex = scrollIndexMax;
       $(currentSection).removeClass("currentSection");
       $(".currentLevel .para-section:last").addClass("currentSection");
+      scrollIndex = scrollIndexMax;
     }
+    triggers = 0;
     setTimeout(ignoreEventsTimeout, ignoreTime);
+
+    console.log('levelMove:', direction, 'curLevel:', $(".currentLevel").index(), 'curSection:', $(currentSection).index());
   };
 
 
@@ -171,50 +181,66 @@ jQuery(document).ready(function ($) {
     const y = e.originalEvent.deltaY;
     const x = e.originalEvent.deltaX;
 
+    // currentSection = $(".currentLevel .currentSection");
+    // currentLevel = $(".currentLevel");
     prlxLayers = $(".currentLevel .prlxLayer");
     prlxLayersCount = $(".currentLevel .prlxLayer").length;
     curLevelIndex = $(".currentLevel").index();
     parallaxContainer = $(".parallax-container.currentLevel");
     paraSectionsCount = $(".currentLevel .para-section").length;
     scrollIndexMax = -100 * (paraSectionsCount - 1);
+    console.log("paraSectionsCount:", paraSectionsCount);
 
     //let thisIndex;
-    let scrollTrace;
+    // let scrollTrace;
 
     //throttle inertia scrolls:
     //console.log("deltaY:", Math.abs(e.originalEvent.deltaY), "deltaX:", Math.abs(e.originalEvent.deltaX));
     if (Math.abs(e.originalEvent.deltaY) + Math.abs(e.originalEvent.deltaX) < 2) return;
 
     if (y < 0 || x < 0) {
-      scrollIndex++;
+      scrollIndex++;  //scroll Up or Left
       if (scrollIndex > 0 && !$(parallaxContainer).prev().length) {
-        scrollIndex = 0;
+        console.log("no previous LEVELS");
+        //scrollIndex = 0;
       }
-      if ((y < 1 || x < 1) && triggers > triggersLimit) {
+      if (triggers > triggersLimit) {
         ignoreEvents = true;
         triggers = 0;
         if ($(".currentSection").prev().length) {
           sectionMove($(".currentSection"), "right");
+          //setTimeout(ignoreEventsTimeout, ignoreTime);
         }
-        else {
+      }
+        if (scrollIndex > 0 && $(parallaxContainer).prev().length) {
+          levelMove($(".currentLevel"), "down");
+          //setTimeout(ignoreEventsTimeout, ignoreTime);
+        }
+        if (scrollIndex > 0) {
           scrollIndex = 0;
         }
         setTimeout(ignoreEventsTimeout, ignoreTime);
-      }
+      
     }
     if (y > 0 || x > 0) {
-      scrollIndex--;
-      if ((y > 1 || x > 1) && triggers > triggersLimit) {
+      scrollIndex--; //scroll Down or Right
+      if (triggers > triggersLimit && $(".currentSection").next().length) {
         ignoreEvents = true;
-        if ($(".currentSection").next().length) {
-          sectionMove($(".currentSection"), "left");
-        }
-        triggers = 0;
+        sectionMove($(".currentSection"), "left");
         setTimeout(ignoreEventsTimeout, ignoreTime);
       }
+      if (scrollIndex < scrollIndexMax && $(parallaxContainer).next().length) {
+        ignoreEvents = true;
+        levelMove($(".currentLevel"), "up");
+        setTimeout(ignoreEventsTimeout, ignoreTime);
+      }
+      // else {
+      //   console.log("no next LEVELS");
+      // }
+
     }
 
-    if (scrollIndex > scrollIndexMax) {
+    if (0 > scrollIndex && scrollIndex > scrollIndexMax) {
       scrollTrace = scrollIndex * centUnit;
       $(prlxLayers).each(function () {
         thisIndex = $(this).index();
@@ -222,15 +248,16 @@ jQuery(document).ready(function ($) {
       });
     }
 
-    if (scrollIndex < scrollIndexMax && $(parallaxContainer).next().length) {
-      levelMove($(".currentLevel"), "up");
-    }
-    if (scrollIndex > 0 && $(parallaxContainer).prev().length) {
-      levelMove($(".currentLevel"), "down");
-    }
+    // if (scrollIndex < scrollIndexMax && $(parallaxContainer).next().length) {
+    //   levelMove($(".currentLevel"), "up");
+    // }
+
+    // if (scrollIndex > 0 && $(parallaxContainer).prev().length) {
+    //   levelMove($(".currentLevel"), "down");
+    // }
 
 
-    //console.log("triggers:", triggers, "scrollIndex:", scrollIndex, "scrollTrace:", scrollTrace);
+    console.log("triggers:", triggers, "scrollIndex:", scrollIndex, "scrollIndexMax:", scrollIndexMax, "scrollTrace:", scrollTrace);
   });
 
   // *************************************************************
