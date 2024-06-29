@@ -80,6 +80,7 @@ h2 {
   transform: translateY(-50vh);
   transition: all 0.75s ease-out;
 }
+
 .animateFromBottom {
   transform: translateY(50vh);
   transition: all 0.75s ease-out;
@@ -121,11 +122,11 @@ h2 {
   background-repeat:
     no-repeat,
     no-repeat,
-    no-repeat, 
-    no-repeat, 
-    repeat-x, 
-    repeat-y, 
-    repeat-x, 
+    no-repeat,
+    no-repeat,
+    repeat-x,
+    repeat-y,
+    repeat-x,
     repeat-y;
 }
 
@@ -138,9 +139,11 @@ h2 {
   position: absolute;
   z-index: -1;
 }
+
 .width-600-5 {
-max-width: calc(600px + 5vw);
+  max-width: calc(600px + 5vw);
 }
+
 .teethPlant::before {
   content: "";
   height: calc(100px + 13vw);
@@ -155,7 +158,40 @@ max-width: calc(600px + 5vw);
   background-size: contain;
   background-repeat: no-repeat;
 }
+
 /* Pseudo element background leaking - fix */
 .wtfHelper {
   transform: translateX(0);
+}
+
+/* ////////////////////////////////////////////////// */
+.menuBar {
+  width: 100vw;
+  display: flex;
+  position: fixed;
+  top: 0;
+  z-index: 99;
+  box-sizing: border-box;
+  padding-right: 3em;
+  justify-content: end;
+  align-items: center;
+  min-height: 100px;
+  background-color: #00000040;
+}
+.menuBar ul {
+  display: inline-flex;
+}
+.menuBar ul li {
+  list-style: none;
+  padding-right: 0.5em;
+}
+.menuBar a {
+  color: white;
+  text-decoration: none;
+  transition: all 0.25s;
+  font-weight: 600;
+  padding: 0.5em;
+}
+.menuBar a:hover {
+  color: yellow;
 }

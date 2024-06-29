@@ -103,7 +103,7 @@ jQuery(document).ready(function ($) {
 
   }
 
-  //move sections left/right
+  //move sections left/right/home
   function sectionMove(current, direction) {
     currentSection = $(".currentLevel .currentSection");
     curSectionIndex = $(".currentLevel .currentSection").index();
@@ -129,6 +129,17 @@ jQuery(document).ready(function ($) {
       scrollIndex = -100 * (curSectionIndex - 1);
       $(currentSection).removeClass("currentSection");
       $(prevSection).addClass("currentSection");
+    }
+    if (direction === "home") {
+      prlxLayers = $(".currentLevel .prlxLayer");
+      scrollTrace = 0;
+      $(prlxLayers).each(function () {
+        thisIndex = $(this).index();
+        $(this).css("transform", "translateX(0px)");
+      });
+      scrollIndex = 0;
+      $(".currentSection").removeClass("currentSection");
+      $(".currentLevel .para-section:first").addClass("currentSection");
     }
     triggers = 0;
     setTimeout(ignoreEventsTimeout, ignoreTime);
@@ -181,8 +192,6 @@ jQuery(document).ready(function ($) {
     const y = e.originalEvent.deltaY;
     const x = e.originalEvent.deltaX;
 
-    // currentSection = $(".currentLevel .currentSection");
-    // currentLevel = $(".currentLevel");
     prlxLayers = $(".currentLevel .prlxLayer");
     prlxLayersCount = $(".currentLevel .prlxLayer").length;
     curLevelIndex = $(".currentLevel").index();
@@ -202,25 +211,22 @@ jQuery(document).ready(function ($) {
       scrollIndex++;  //scroll Up or Left
       if (scrollIndex > 0 && !$(parallaxContainer).prev().length) {
         console.log("no previous LEVELS");
-        //scrollIndex = 0;
       }
       if (triggers > triggersLimit) {
         ignoreEvents = true;
         triggers = 0;
         if ($(".currentSection").prev().length) {
           sectionMove($(".currentSection"), "right");
-          //setTimeout(ignoreEventsTimeout, ignoreTime);
         }
       }
-        if (scrollIndex > 0 && $(parallaxContainer).prev().length) {
-          levelMove($(".currentLevel"), "down");
-          //setTimeout(ignoreEventsTimeout, ignoreTime);
-        }
-        if (scrollIndex > 0) {
-          scrollIndex = 0;
-        }
-        setTimeout(ignoreEventsTimeout, ignoreTime);
-      
+      if (scrollIndex > 0 && $(parallaxContainer).prev().length) {
+        levelMove($(".currentLevel"), "down");
+      }
+      if (scrollIndex > 0) {
+        scrollIndex = 0;
+      }
+      setTimeout(ignoreEventsTimeout, ignoreTime);
+
     }
     if (y > 0 || x > 0) {
       scrollIndex--; //scroll Down or Right
@@ -234,10 +240,6 @@ jQuery(document).ready(function ($) {
         levelMove($(".currentLevel"), "up");
         setTimeout(ignoreEventsTimeout, ignoreTime);
       }
-      // else {
-      //   console.log("no next LEVELS");
-      // }
-
     }
 
     if (0 > scrollIndex && scrollIndex > scrollIndexMax) {
@@ -247,15 +249,6 @@ jQuery(document).ready(function ($) {
         $(this).css("transform", "translateX(" + (scrollTrace * thisIndex * prlxRatio) + "px)");
       });
     }
-
-    // if (scrollIndex < scrollIndexMax && $(parallaxContainer).next().length) {
-    //   levelMove($(".currentLevel"), "up");
-    // }
-
-    // if (scrollIndex > 0 && $(parallaxContainer).prev().length) {
-    //   levelMove($(".currentLevel"), "down");
-    // }
-
 
     console.log("triggers:", triggers, "scrollIndex:", scrollIndex, "scrollIndexMax:", scrollIndexMax, "scrollTrace:", scrollTrace);
   });
@@ -296,6 +289,29 @@ jQuery(document).ready(function ($) {
         "background-image", "url(https://magic.sernato.sk/wp-content/uploads/2024/06/cursor1.png)"
       );
     });
+
+  // assign ID to levels:
+  $(".parallax-container").each(function () {
+    var thisIndex = $(this).index();
+    $(this).attr('id', ('level' + (thisIndex + 1)));
+  });
+
+
+  // navigation links:
+  $(".navLink").each(function () {
+    $(this).on("click", function () {
+      
+      let link = $(this).attr("href");
+      let thisLevel = $(link);
+      $(".currentLevel").removeClass("currentLevel");
+      $(thisLevel).addClass("currentLevel");
+      //go to first section:
+
+      setParalaxContainerPosition();
+      sectionMove($(".currentSection"), "home");
+    })
+  })
+
 
 
   // *************************************************************
