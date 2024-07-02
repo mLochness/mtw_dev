@@ -176,7 +176,7 @@ jQuery(document).ready(function ($) {
     triggers = 0;
     setTimeout(ignoreEventsTimeout, ignoreTime);
 
-    console.log('levelMove:', direction, 'curLevel:', $(".currentLevel").index(), 'curSection:', $(currentSection).index());
+    console.log('levelMove:', direction, 'curLevel:', $(".currentLevel").index(), 'curSection:', $(".currentSection").index());
   };
 
 
@@ -200,8 +200,6 @@ jQuery(document).ready(function ($) {
     scrollIndexMax = -100 * (paraSectionsCount - 1);
     console.log("paraSectionsCount:", paraSectionsCount);
 
-    //let thisIndex;
-    // let scrollTrace;
 
     //throttle inertia scrolls:
     //console.log("deltaY:", Math.abs(e.originalEvent.deltaY), "deltaX:", Math.abs(e.originalEvent.deltaX));
@@ -275,7 +273,8 @@ jQuery(document).ready(function ($) {
     draggingY = 0,
     draggingX = 0,
     dragYlock = false,
-    dragXlock = false;
+    dragXlock = false,
+    dragTrigger = 50; // dragging distance to trigger move function
 
   scene.addEventListener("pointerdown", pointerDown);
   scene.addEventListener("pointerup", pointerUp);
@@ -310,10 +309,10 @@ jQuery(document).ready(function ($) {
     dragXoffset = dragXstart - dragXstop;
 
     //dragging prevents firing on click
-    if (dragXoffset < 30 && dragX > 30 && $(".currentLevel .currentSection").prev().length) {
+    if (dragXoffset < dragTrigger && dragX > dragTrigger && $(".currentLevel .currentSection").prev().length) {
       sectionMove($(".currentSection"), "right");
     }
-    else if (dragXoffset > 30 && dragX < -30 && $(".currentLevel .currentSection").next().length) {
+    else if (dragXoffset > dragTrigger && dragX < -dragTrigger && $(".currentLevel .currentSection").next().length) {
       sectionMove($(".currentSection"), "left");
     }
     // else if (dragYoffset < 30 && dragY > 30 && $(".current").prev().length) {
@@ -323,10 +322,8 @@ jQuery(document).ready(function ($) {
     //   dragmoveUp();
     // }
     else {
-      //not a drag, get back to position 
+      //unintentional/insufficient drag 
       console.log("not a drag...")
-      // $(".scene").animate({ "top": -curLevelPosition + "px" }, 100);
-      // $(".current .slideDiv").animate({ "left": -curSectionPosition + "px" }, 100);
     }
 
     isDragging = false;
@@ -340,6 +337,9 @@ jQuery(document).ready(function ($) {
 
   //dragging in one axis at a time
   function XorYdrag() {
+    if (ignoreEvents === true) {
+      return;
+    }
     draggingY = Math.abs(dragYcurrent - dragYstart);
     draggingX = Math.abs(dragXcurrent - dragXstart);
     if (draggingY > 7 && dragXlock === false) {
@@ -359,16 +359,33 @@ jQuery(document).ready(function ($) {
 
   function dragXPosition() {
     dragX = dragXcurrent - dragXstart;
-    //$(".current .slideDiv").css("left", -curSectionPosition + dragX + "px");
+    // prevent dragging left if first section
     if (scrollIndex > -1 && !$(".currentLevel").prev().length) {
       console.log("nothing before this..");
       return;
     }
+    // prevent dragging right if last section
+    if (scrollIndex < (scrollIndexMax + 1) && !$(".currentLevel").next().length) {
+      console.log("nothing after this..");
+      return;
+    }
 
-      $(prlxLayers).each(function () {
-        thisIndex = $(this).index();
-        $(this).css("transform", "translateX(" + ((-curSectionPosition + dragX) * thisIndex * prlxRatio) + "px)");
-      });
+    $(prlxLayers).each(function () {
+      thisIndex = $(this).index();
+      $(this).css("transform", "translateX(" + ((-curSectionPosition + dragX) * thisIndex * prlxRatio) + "px)");
+    });
+
+    if (scrollIndex > -1 && $(".currentLevel").prev().length) {
+      levelMove($(".currentLevel"), "down");
+      scrollIndex = scrollIndexMax;
+      console.log("level drag - DOWN");
+    }
+
+    if (scrollIndex < (scrollIndexMax + 1) && $(".currentLevel").next().length) {
+      levelMove($(".currentLevel"), "up");
+      scrollIndex = 0;
+      console.log("level drag - UP");
+    }
   }
 
   // *************************************************************
