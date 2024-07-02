@@ -253,6 +253,124 @@ jQuery(document).ready(function ($) {
     console.log("triggers:", triggers, "scrollIndex:", scrollIndex, "scrollIndexMax:", scrollIndexMax, "scrollTrace:", scrollTrace);
   });
 
+
+
+
+  // ********  TOUCHscreen  **************************************
+
+  const scene = document.querySelector(".scene");
+  var dragYstart,
+    dragXstart,
+    dragYcurrent,
+    dragXcurrent,
+    dragYstop,
+    dragXstop,
+    dragYoffset,
+    dragXoffset,
+    curLevelPosition,
+    curSectionPosition = 0,
+    dragY = 0,
+    dragX = 0,
+    isDragging = false,
+    draggingY = 0,
+    draggingX = 0,
+    dragYlock = false,
+    dragXlock = false;
+
+  scene.addEventListener("pointerdown", pointerDown);
+  scene.addEventListener("pointerup", pointerUp);
+  scene.addEventListener("pointercancel", pointerUp);
+
+  //scene.addEventListener("pointerout", pointerUp);
+
+  function pointerDown(e) {
+    //scene.setPointerCapture(e.pointerId);
+    dragYstart = e.clientY;
+    dragXstart = e.clientX;
+    curLevelPosition = ($(".currentLevel").index()) * vHeight;
+    curSectionPosition = ($(".currentLevel .currentSection").index()) * vWidth;
+    isDragging = true;
+    scene.addEventListener("pointermove", pointerMove);
+  }
+
+  function pointerMove(e) {
+    //e.preventDefault();
+    dragYcurrent = e.clientY;
+    dragXcurrent = e.clientX;
+    if (isDragging = true) {
+      XorYdrag();
+      scene.classList.add("grabbing");
+    }
+  }
+
+  function pointerUp(e) {
+    dragYstop = e.clientY;
+    dragYoffset = dragYstart - dragYstop;
+    dragXstop = e.clientX;
+    dragXoffset = dragXstart - dragXstop;
+
+    //dragging prevents firing on click
+    if (dragXoffset < 30 && dragX > 30 && $(".currentLevel .currentSection").prev().length) {
+      sectionMove($(".currentSection"), "right");
+    }
+    else if (dragXoffset > 30 && dragX < -30 && $(".currentLevel .currentSection").next().length) {
+      sectionMove($(".currentSection"), "left");
+    }
+    // else if (dragYoffset < 30 && dragY > 30 && $(".current").prev().length) {
+    //   dragmoveDown();
+    // }
+    // else if (dragYoffset > 30 && dragY < -30 && $(".current").next().length) {
+    //   dragmoveUp();
+    // }
+    else {
+      //not a drag, get back to position 
+      console.log("not a drag...")
+      // $(".scene").animate({ "top": -curLevelPosition + "px" }, 100);
+      // $(".current .slideDiv").animate({ "left": -curSectionPosition + "px" }, 100);
+    }
+
+    isDragging = false;
+    dragYlock = false;
+    dragXlock = false;
+
+    scene.removeEventListener("pointermove", pointerMove);
+    scene.classList.remove("grabbing");
+
+  }
+
+  //dragging in one axis at a time
+  function XorYdrag() {
+    draggingY = Math.abs(dragYcurrent - dragYstart);
+    draggingX = Math.abs(dragXcurrent - dragXstart);
+    if (draggingY > 7 && dragXlock === false) {
+      dragYlock = true;
+      dragYPosition();
+    }
+    if (draggingX > 7 && dragYlock === false) {
+      dragXlock = true;
+      dragXPosition()
+    }
+  }
+
+  function dragYPosition() {
+    dragY = dragYcurrent - dragYstart;
+    //$(".pswrapper").css("top", -curLevelPosition + dragY + "px");
+  }
+
+  function dragXPosition() {
+    dragX = dragXcurrent - dragXstart;
+    //$(".current .slideDiv").css("left", -curSectionPosition + dragX + "px");
+    if (scrollIndex > -1 && !$(".currentLevel").prev().length) {
+      console.log("nothing before this..");
+      return;
+    }
+
+      $(prlxLayers).each(function () {
+        thisIndex = $(this).index();
+        $(this).css("transform", "translateX(" + ((-curSectionPosition + dragX) * thisIndex * prlxRatio) + "px)");
+      });
+  }
+
   // *************************************************************
 
   //custom cursor: 
@@ -300,7 +418,7 @@ jQuery(document).ready(function ($) {
   // navigation links:
   $(".navLink").each(function () {
     $(this).on("click", function () {
-      
+
       let link = $(this).attr("href");
       let thisLevel = $(link);
       $(".currentLevel").removeClass("currentLevel");
