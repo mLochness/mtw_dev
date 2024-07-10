@@ -61,7 +61,8 @@ jQuery(document).ready(function ($) {
 
     setParalaxContainerPosition();
 
-    // count 1/100 of viewport:
+    // count moveUnits for fitting sections in viewport:
+    moveUnit = vWidth / prlxLayersCount;
     centUnit = vWidth / 100;
   }
 
@@ -247,7 +248,7 @@ jQuery(document).ready(function ($) {
       });
     }
 
-    console.log("SCROLL triggers:", triggers, "scrollIndex:", scrollIndex, "scrollIndexMax:", scrollIndexMax, "scrollTrace:", scrollTrace);
+    console.log("triggers:", triggers, "scrollIndex:", scrollIndex, "scrollIndexMax:", scrollIndexMax, "scrollTrace:", scrollTrace);
   });
 
 
@@ -273,7 +274,7 @@ jQuery(document).ready(function ($) {
     draggingX = 0,
     dragYlock = false,
     dragXlock = false,
-    dragTrigger = 10; // dragging distance to trigger move function
+    dragTrigger = 50; // dragging distance to trigger move function
 
   scene.addEventListener("pointerdown", pointerDown);
   scene.addEventListener("pointerup", pointerUp);
@@ -341,8 +342,6 @@ jQuery(document).ready(function ($) {
     dragXoffset = 0;
 
 
-    console.log("trigger:", dragTrigger, "dragXoffset:", dragXoffset, "dragX:", dragX);
-    dragX = 0;
   }
 
   //dragging in one axis at a time
@@ -368,6 +367,7 @@ jQuery(document).ready(function ($) {
   }
 
   function dragXPosition() {
+    dragX = dragXcurrent - dragXstart;
     // prevent dragging left if first section
     if (scrollIndex > -1) {
       if (!$(".currentLevel").prev().length) {
@@ -385,23 +385,11 @@ jQuery(document).ready(function ($) {
       console.log("nothing after this..");
       return;
     }
-    dragX = dragXcurrent - dragXstart;
+
     $(prlxLayers).each(function () {
       thisIndex = $(this).index();
       $(this).css("transform", "translateX(" + ((-curSectionPosition + dragX) * thisIndex * prlxRatio) + "px)");
     });
-
-    if (scrollIndex > -1 && $(".currentLevel").prev().length) {
-      levelMove($(".currentLevel"), "down");
-      scrollIndex = scrollIndexMax;
-      console.log("level drag - DOWN");
-    }
-
-    if (scrollIndex < (scrollIndexMax + 1) && $(".currentLevel").next().length) {
-      levelMove($(".currentLevel"), "up");
-      scrollIndex = 0;
-      console.log("level drag - UP");
-    }
   }
 
   // *************************************************************
@@ -550,3 +538,4 @@ jQuery(document).ready(function ($) {
   };
 
 })
+
