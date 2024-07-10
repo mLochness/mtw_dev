@@ -143,7 +143,7 @@ jQuery(document).ready(function ($) {
     }
     triggers = 0;
     setTimeout(ignoreEventsTimeout, ignoreTime);
-    console.log('sectionMove:', direction, 'curLevel:', $(".currentLevel").index(), 'curSection:', $(".currentSection").index());
+    console.log('sectionMove:', direction, 'curLevel:', $(".currentLevel").index(), 'curSection:', $(".currentSection").index(), "scrollTrace", scrollTrace);
   };
 
 
@@ -176,12 +176,12 @@ jQuery(document).ready(function ($) {
     triggers = 0;
     setTimeout(ignoreEventsTimeout, ignoreTime);
 
-    console.log('levelMove:', direction, 'curLevel:', $(".currentLevel").index(), 'curSection:', $(".currentSection").index());
+    console.log('levelMove:', direction, 'curLevel:', $(".currentLevel").index(), 'curSection:', $(".currentSection").index(), "scrollTrace", scrollTrace);
   };
 
 
 
-  $(document).on("wheel touchmove", function (e) {
+  $(document).on("wheel", function (e) {
 
     if (ignoreEvents === true) {
       return;
@@ -198,7 +198,7 @@ jQuery(document).ready(function ($) {
     parallaxContainer = $(".parallax-container.currentLevel");
     paraSectionsCount = $(".currentLevel .para-section").length;
     scrollIndexMax = -100 * (paraSectionsCount - 1);
-    console.log("paraSectionsCount:", paraSectionsCount);
+    //console.log("paraSectionsCount:", paraSectionsCount);
 
 
     //throttle inertia scrolls:
@@ -309,21 +309,24 @@ jQuery(document).ready(function ($) {
     dragXoffset = dragXstart - dragXstop;
 
     //dragging prevents firing on click
-    if (dragXoffset < dragTrigger && dragX > dragTrigger && $(".currentLevel .currentSection").prev().length) {
-      sectionMove($(".currentSection"), "right");
+    if (dragXoffset < -dragTrigger) {
+      if ($(".currentLevel .currentSection").prev().length) {
+        sectionMove($(".currentSection"), "right");
+      }
+      else if (!$(".currentLevel .currentSection").prev().length && $(".currentLevel").prev().length) {
+        levelMove($(".currentLevel"), "down");
+        scrollIndex = scrollIndexMax;
+      }
     }
-    else if (dragXoffset > dragTrigger && dragX < -dragTrigger && $(".currentLevel .currentSection").next().length) {
-      sectionMove($(".currentSection"), "left");
-    }
-    // else if (dragYoffset < 30 && dragY > 30 && $(".current").prev().length) {
-    //   dragmoveDown();
-    // }
-    // else if (dragYoffset > 30 && dragY < -30 && $(".current").next().length) {
-    //   dragmoveUp();
-    // }
-    else {
-      //unintentional/insufficient drag 
-      console.log("not a drag...")
+
+    if (dragXoffset > dragTrigger) {
+      if ($(".currentLevel .currentSection").next().length) {
+        sectionMove($(".currentSection"), "left");
+      }
+      else if (!$(".currentLevel .currentSection").next().length && $(".currentLevel").next().length) {
+        levelMove($(".currentLevel"), "up");
+        scrollIndex = 0;
+      }
     }
 
     isDragging = false;
@@ -332,6 +335,12 @@ jQuery(document).ready(function ($) {
 
     scene.removeEventListener("pointermove", pointerMove);
     scene.classList.remove("grabbing");
+
+    console.log("dragX:", dragX, "dragXoffset:", dragXoffset);
+
+    dragX = 0;
+    dragXoffset = 0;
+
 
   }
 
@@ -360,10 +369,17 @@ jQuery(document).ready(function ($) {
   function dragXPosition() {
     dragX = dragXcurrent - dragXstart;
     // prevent dragging left if first section
-    if (scrollIndex > -1 && !$(".currentLevel").prev().length) {
-      console.log("nothing before this..");
-      return;
+    if (scrollIndex > -1) {
+      if (!$(".currentLevel").prev().length) {
+        console.log("nothing before this..");
+        return;
+      }
+      else if (!$(".currentLevel .currentSection").prev().length) {
+        console.log("no dragging this to right");
+        return;
+      }
     }
+
     // prevent dragging right if last section
     if (scrollIndex < (scrollIndexMax + 1) && !$(".currentLevel").next().length) {
       console.log("nothing after this..");
@@ -374,18 +390,6 @@ jQuery(document).ready(function ($) {
       thisIndex = $(this).index();
       $(this).css("transform", "translateX(" + ((-curSectionPosition + dragX) * thisIndex * prlxRatio) + "px)");
     });
-
-    if (scrollIndex > -1 && $(".currentLevel").prev().length) {
-      levelMove($(".currentLevel"), "down");
-      scrollIndex = scrollIndexMax;
-      console.log("level drag - DOWN");
-    }
-
-    if (scrollIndex < (scrollIndexMax + 1) && $(".currentLevel").next().length) {
-      levelMove($(".currentLevel"), "up");
-      scrollIndex = 0;
-      console.log("level drag - UP");
-    }
   }
 
   // *************************************************************
