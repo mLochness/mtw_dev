@@ -163,6 +163,10 @@ h2 {
   background-repeat: no-repeat;
 }
 
+.finish {
+  background-color: #2e2727;
+}
+
 /* Pseudo element background leaking - fix */
 .wtfHelper {
   transform: translateX(0);

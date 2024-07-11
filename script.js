@@ -370,7 +370,8 @@ jQuery(document).ready(function ($) {
   function dragXPosition() {
     dragX = dragXcurrent - dragXstart;
     // prevent dragging left if first section
-    if (scrollIndex > -1) {
+    // if (scrollIndex > -1) {
+    if (dragX > 0) {
       if (!$(".currentLevel").prev().length) {
         console.log("nothing before this..");
         return;
