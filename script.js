@@ -61,7 +61,8 @@ jQuery(document).ready(function ($) {
 
     setParalaxContainerPosition();
 
-    // count 1/100 of viewport:
+    // count moveUnits for fitting sections in viewport:
+    moveUnit = vWidth / prlxLayersCount;
     centUnit = vWidth / 100;
   }
 
@@ -142,7 +143,7 @@ jQuery(document).ready(function ($) {
     }
     triggers = 0;
     setTimeout(ignoreEventsTimeout, ignoreTime);
-    console.log('sectionMove:', direction, 'curLevel:', $(".currentLevel").index(), 'curSection:', $(".currentSection").index(), "scrollIndex:", scrollIndexMax, "Max:", scrollIndexMax);
+    console.log('sectionMove:', direction, 'curLevel:', $(".currentLevel").index(), 'curSection:', $(".currentSection").index(), "scrollTrace", scrollTrace);
   };
 
 
@@ -175,7 +176,7 @@ jQuery(document).ready(function ($) {
     triggers = 0;
     setTimeout(ignoreEventsTimeout, ignoreTime);
 
-    console.log('levelMove:', direction, 'curLevel:', $(".currentLevel").index(), 'curSection:', $(".currentSection").index(), "scrollIndex:", scrollIndexMax, "Max:", scrollIndexMax);
+    console.log('levelMove:', direction, 'curLevel:', $(".currentLevel").index(), 'curSection:', $(".currentSection").index(), "scrollTrace", scrollTrace);
   };
 
 
@@ -197,7 +198,7 @@ jQuery(document).ready(function ($) {
     parallaxContainer = $(".parallax-container.currentLevel");
     paraSectionsCount = $(".currentLevel .para-section").length;
     scrollIndexMax = -100 * (paraSectionsCount - 1);
-    console.log("paraSectionsCount:", paraSectionsCount);
+    //console.log("paraSectionsCount:", paraSectionsCount);
 
 
     //throttle inertia scrolls:
@@ -247,7 +248,7 @@ jQuery(document).ready(function ($) {
       });
     }
 
-    console.log("SCROLL triggers:", triggers, "scrollIndex:", scrollIndex, "scrollIndexMax:", scrollIndexMax, "scrollTrace:", scrollTrace);
+    console.log("triggers:", triggers, "scrollIndex:", scrollIndex, "scrollIndexMax:", scrollIndexMax, "scrollTrace:", scrollTrace);
   });
 
 
@@ -273,7 +274,7 @@ jQuery(document).ready(function ($) {
     draggingX = 0,
     dragYlock = false,
     dragXlock = false,
-    dragTrigger = 10; // dragging distance to trigger move function
+    dragTrigger = 50; // dragging distance to trigger move function
 
   scene.addEventListener("pointerdown", pointerDown);
   scene.addEventListener("pointerup", pointerUp);
@@ -307,33 +308,25 @@ jQuery(document).ready(function ($) {
     dragXstop = e.clientX;
     dragXoffset = dragXstart - dragXstop;
 
-
-    if (dragXoffset < dragTrigger && dragX > dragTrigger) {
+    //dragging prevents firing on click
+    if (dragXoffset < -dragTrigger) {
       if ($(".currentLevel .currentSection").prev().length) {
         sectionMove($(".currentSection"), "right");
       }
-      if ($(".currentSection").index() == 0 && $(".currentLevel").prev().length) {
+      else if (!$(".currentLevel .currentSection").prev().length && $(".currentLevel").prev().length) {
         levelMove($(".currentLevel"), "down");
         scrollIndex = scrollIndexMax;
-        console.log("level drag - DOWN");
-        //return;
       }
     }
-    if (dragXoffset > dragTrigger && dragX < -dragTrigger) {
+
+    if (dragXoffset > dragTrigger) {
       if ($(".currentLevel .currentSection").next().length) {
-      sectionMove($(".currentSection"), "left");
+        sectionMove($(".currentSection"), "left");
       }
-      if ($(".currentLevel .para-section:last").hasClass("currentSection") && $(".currentLevel").next().length) {
+      else if (!$(".currentLevel .currentSection").next().length && $(".currentLevel").next().length) {
         levelMove($(".currentLevel"), "up");
         scrollIndex = 0;
-        console.log("level drag - UP");
-        //return;
       }
-    }
-   
-    else {
-      //unintentional/insufficient drag 
-      console.log("not a drag...")
     }
 
     isDragging = false;
@@ -343,8 +336,12 @@ jQuery(document).ready(function ($) {
     scene.removeEventListener("pointermove", pointerMove);
     scene.classList.remove("grabbing");
 
-    console.log("trigger:", dragTrigger, "dragXoffset:", dragXoffset, "dragX:", dragX);
+    console.log("dragX:", dragX, "dragXoffset:", dragXoffset);
+
     dragX = 0;
+    dragXoffset = 0;
+
+
   }
 
   //dragging in one axis at a time
@@ -371,22 +368,29 @@ jQuery(document).ready(function ($) {
   }
 
   function dragXPosition() {
+    dragX = dragXcurrent - dragXstart;
     // prevent dragging left if first section
-    if (!$(".currentLevel .currentSection").prev().length  && !$(".currentLevel").prev().length) {
-      console.log("nothing before this..");
-      return;
+    if (scrollIndex > -1) {
+      if (!$(".currentLevel").prev().length) {
+        console.log("nothing before this..");
+        return;
+      }
+      else if (!$(".currentLevel .currentSection").prev().length) {
+        console.log("no dragging this to right");
+        return;
+      }
     }
+
     // prevent dragging right if last section
     if (!$(".currentLevel .currentSection").next().length && !$(".currentLevel").next().length) {
       console.log("nothing after this..");
       //return;
     }
-    dragX = dragXcurrent - dragXstart;
+
     $(prlxLayers).each(function () {
       thisIndex = $(this).index();
       $(this).css("transform", "translateX(" + ((-curSectionPosition + dragX) * thisIndex * prlxRatio) + "px)");
     });
-    console.log("dragX:", dragX);
   }
 
   // *************************************************************
