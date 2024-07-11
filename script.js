@@ -327,7 +327,7 @@ jQuery(document).ready(function ($) {
         levelMove($(".currentLevel"), "up");
         scrollIndex = 0;
         console.log("level drag - UP");
-        return;
+        //return;
       }
     }
    
@@ -354,14 +354,15 @@ jQuery(document).ready(function ($) {
     }
     draggingY = Math.abs(dragYcurrent - dragYstart);
     draggingX = Math.abs(dragXcurrent - dragXstart);
-    if (draggingY > 7 && dragXlock === false) {
+    if (draggingY > dragTrigger && dragXlock === false) {
       dragYlock = true;
       dragYPosition();
     }
-    if (draggingX > 7 && dragYlock === false) {
+    if (draggingX > dragTrigger && dragYlock === false) {
       dragXlock = true;
       dragXPosition()
     }
+    console.log("draggingX:", draggingX);
   }
 
   function dragYPosition() {
@@ -371,14 +372,14 @@ jQuery(document).ready(function ($) {
 
   function dragXPosition() {
     // prevent dragging left if first section
-    if (scrollIndex > -1 && !$(".currentLevel").prev().length) {
+    if (!$(".currentLevel .currentSection").prev().length  && !$(".currentLevel").prev().length) {
       console.log("nothing before this..");
       return;
     }
     // prevent dragging right if last section
-    if (scrollIndex < (scrollIndexMax + 1) && !$(".currentLevel").next().length) {
+    if (!$(".currentLevel .currentSection").next().length && !$(".currentLevel").next().length) {
       console.log("nothing after this..");
-      return;
+      //return;
     }
     dragX = dragXcurrent - dragXstart;
     $(prlxLayers).each(function () {
