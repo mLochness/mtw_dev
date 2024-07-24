@@ -56,7 +56,10 @@ jQuery(document).ready(function ($) {
     // set parallax layers width:
     $(prlxLayers).each(function () {
       thisIndex = $(this).index();
-      $(this).css("width", (thisIndex + 1) * vWidth + (thisIndex * vWidth) + "px");
+      let containerSectionsCount = $(this).parent().find(".para-section").length;
+      //console.log("para-sections found:", containerSectionsCount);
+      if ($(this))
+      $(this).css("width", (thisIndex + 1) * vWidth + (thisIndex * containerSectionsCount * vWidth) + "px");
     })
 
     setParalaxContainerPosition();
@@ -479,7 +482,7 @@ jQuery(document).ready(function ($) {
 
 
   // navigation links:
-  $(".navLink").each(function () {
+  $(".menu-link").each(function () {
     $(this).on("click", function () {
 
       let link = $(this).attr("href");
