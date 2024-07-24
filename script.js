@@ -107,12 +107,11 @@ jQuery(document).ready(function ($) {
   function sectionMove(current, direction) {
     currentSection = $(".currentLevel .currentSection");
     curSectionIndex = $(".currentLevel .currentSection").index();
-    var curPrlxLayers = $(".currentLevel .prlxLayer");
 
     if (direction === "left") {
       var nextSection = $(currentSection).next();
       scrollTrace = -vWidth * (curSectionIndex + 1);
-      $(curPrlxLayers).each(function () {
+      $(".currentLevel .prlxLayer").each(function () {
         thisIndex = $(this).index();
         $(this).css("transform", "translateX(" + (scrollTrace * (thisIndex) * prlxRatio) + "px)");
       });
@@ -123,7 +122,7 @@ jQuery(document).ready(function ($) {
     if (direction === "right") {
       var prevSection = $(currentSection).prev();
       scrollTrace = -vWidth * (curSectionIndex - 1);
-      $(curPrlxLayers).each(function () {
+      $(".currentLevel .prlxLayer").each(function () {
         thisIndex = $(this).index();
         $(this).css("transform", "translateX(" + (scrollTrace * (thisIndex) * prlxRatio) + "px)");
       });
@@ -134,7 +133,7 @@ jQuery(document).ready(function ($) {
     if (direction === "home") {
       //prlxLayers = $(".currentLevel .prlxLayer");
       scrollTrace = 0;
-      $(curPrlxLayers).each(function () {
+      $(".currentLevel .prlxLayer").each(function () {
         thisIndex = $(this).index();
         $(this).css("transform", "translateX(0px)");
       });
@@ -164,11 +163,12 @@ jQuery(document).ready(function ($) {
       var nextLevel = $(currentLevel).next();
       $(currentLevel).removeClass("currentLevel");
       $(nextLevel).addClass("currentLevel");
-      setParalaxContainerPosition();
+      // setParalaxContainerPosition();
       $(currentSection).removeClass("currentSection");
       $(".currentLevel .para-section:first").addClass("currentSection");
       scrollIndex = 0;
       scrollTrace = 0;
+      setParalaxContainerPosition();
       $(".currentLevel .prlxLayer").each(function () {
         $(this).css("transform", "translateX(0px)");
       })
@@ -183,7 +183,7 @@ jQuery(document).ready(function ($) {
       scrollIndex = scrollIndexMax;
       curSectionIndex = $(".currentLevel .currentSection").index();
       scrollTrace = -vWidth * (curSectionIndex);
-      $(prlxLayers).each(function () {
+      $(".currentLevel .prlxLayer").each(function () {
         thisIndex = $(this).index();
         $(this).css("transform", "translateX(" + (scrollTrace * (thisIndex) * prlxRatio) + "px)");
       });
@@ -195,8 +195,8 @@ jQuery(document).ready(function ($) {
     console.log("triggers:", triggers, "scrollIndex:", scrollIndex, "scrollIndexMax:", scrollIndexMax, "scrollTrace:", scrollTrace);
   };
 
-
-
+  
+  
   $(document).on("wheel", function (e) {
 
     if (ignoreEvents === true) {
@@ -398,7 +398,7 @@ jQuery(document).ready(function ($) {
       return;
     }
 
-    $(prlxLayers).each(function () {
+    $(".currentLevel .prlxLayer").each(function () {
       thisIndex = $(this).index();
       $(this).css("transform", "translateX(" + ((-curSectionPosition + dragY) * thisIndex * prlxRatio) + "px)");
     });
@@ -426,7 +426,7 @@ jQuery(document).ready(function ($) {
       //return;
     }
 
-    $(prlxLayers).each(function () {
+    $(".currentLevel .prlxLayer").each(function () {
       thisIndex = $(this).index();
       $(this).css("transform", "translateX(" + ((-curSectionPosition + dragX) * thisIndex * prlxRatio) + "px)");
     });
